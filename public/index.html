@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h1>🎬 Movie Recommender</h1>
+    <input type="number" id="userId" value="10">
+    <button onclick="getRecs()">Get Recommendations</button>
+    <ul id="results"></ul>
+
+    <script>
+        async function getRecs() {
+            const uid = document.getElementById('userId').value;
+            const res = await fetch(`/api/recommend/${uid}`);
+            const data = await res.json();
+            const list = document.getElementById('results');
+            list.innerHTML = data.recommendations.map(m => `<li>${m}</li>`).join('');
+        }
+    </script>
+</body>
+</html>

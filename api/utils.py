@@ -1,8 +1,8 @@
-# utils.py
 import torch
 import torch.nn as nn
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
+import os
 
 # 1. Define Model Architecture
 class MovieRecommender(nn.Module):
@@ -25,16 +25,22 @@ class MovieRecommender(nn.Module):
         x = self.relu(self.fc2(x))
         return self.output(x)
 
-# 2. Data Loading (Run once, stay in memory)
-ratings = pd.read_csv('ratings.dat', sep='::', engine='python', names=['UserID', 'MovieID', 'Rating', 'Timestamp'])
-users = pd.read_csv('users.dat', sep='::', engine='python', names=['UserID', 'Gender', 'Age', 'Occupation', 'Zip-code'])
-movies = pd.read_csv('movies.dat', sep='::', engine='python', names=['MovieID', 'Title', 'Genres'], encoding='latin-1')
+# 2. Data Loading
+# Since this file is inside the /api folder, and your data files 
+# are also inside /api, we use the direct filename.
+ratings = pd.read_csv('api/ratings.dat', sep='::', engine='python', names=['UserID', 'MovieID', 'Rating', 'Timestamp'])
+users = pd.read_csv('api/users.dat', sep='::', engine='python', names=['UserID', 'Gender', 'Age', 'Occupation', 'Zip-code'])
+movies = pd.read_csv('api/movies.dat', sep='::', engine='python', names=['MovieID', 'Title', 'Genres'], encoding='latin-1')
+
 df = ratings.merge(users, on='UserID').merge(movies, on='MovieID')
 
 user_enc = LabelEncoder()
 movie_enc = LabelEncoder()
 df['User_idx'] = user_enc.fit_transform(df['UserID'])
 df['Movie_idx'] = movie_enc.fit_transform(df['MovieID'])
+
+num_users = df['User_idx'].nunique()
+num_movies = df['Movie_idx'].nunique()
 
 # 3. Helper Function
 def get_top_n_recommendations(user_id, model, n=10):
@@ -47,6 +53,10 @@ def get_top_n_recommendations(user_id, model, n=10):
     watched_movies = df[df['UserID'] == user_id]['Movie_idx'].values
     all_movie_indices = df['Movie_idx'].unique()
     unseen_movies = [m for m in all_movie_indices if m not in watched_movies]
+    
+    # Handle cases where user has seen all movies
+    if not unseen_movies:
+        return ["No new movies to recommend."]
     
     user_tensor = torch.LongTensor([user_idx] * len(unseen_movies))
     movie_tensor = torch.LongTensor(unseen_movies)
