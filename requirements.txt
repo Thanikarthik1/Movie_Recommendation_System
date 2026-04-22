@@ -1,7 +1,6 @@
-fastapi
-uvicorn
-torch
-pandas
-scikit-learn
-requests
-streamlit
+pandas==2.2.3
+scikit-learn==1.6.0
+requests==2.32.3
+streamlit==1.42.0
+# The critical change for RAM usage:
+torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
