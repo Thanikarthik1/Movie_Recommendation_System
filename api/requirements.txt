@@ -3,4 +3,4 @@ uvicorn==0.30.6
 pandas==2.2.3
 scikit-learn==1.5.2
 requests==2.32.3
-torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
+torch==2.5.1
